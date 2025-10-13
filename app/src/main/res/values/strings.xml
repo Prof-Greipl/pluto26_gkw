@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Pluto26_gkw</string>
+    <string name="button">Button</string>
+    <string name="hello_mobile_technologies">Hello Mobile Technologies!</string>
 </resources>

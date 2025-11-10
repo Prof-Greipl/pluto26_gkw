@@ -1,5 +1,6 @@
 package de.hawlandshut.pluto26_gkw;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -36,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         Log.d(TAG, "onStart called");
+        Intent intent = new Intent(getApplication(), ManageAccountActivity.class);
+        startActivity(intent);
         super.onStart();
     }
 

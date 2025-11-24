@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
+    //Added manually Nov 24, 2025
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -40,4 +42,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    // Addded manually on Nov 24, 2025
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")  // <-- needed for authentication functions
+
 }

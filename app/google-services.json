@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "836960046950",
+    "project_id": "pluto26-gkw",
+    "storage_bucket": "pluto26-gkw.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836960046950:android:b73bd8a081abebf628c2a7",
+        "android_client_info": {
+          "package_name": "de.hawlandshut.pluto26_gkw"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuCDQfrxLmc53z-6K4rwc_hnOFA_SuAWo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

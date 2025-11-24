@@ -14,9 +14,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import de.hawlandshut.pluto26_gkw.test.Test;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "xxx MainActivity";
+    private CustomAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+
+    // TODO Only for testing - remove later
+    private static final String TEST_MAIL = "fhgreipl@gmail.com";
+    private static final String TEST_PASSWORD ="123456";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,16 +43,25 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+
+        mAdapter = new CustomAdapter();
+        // Testdaten setzen
+        mAdapter.mPostList = Test.createPostList(3);
+
+        mRecyclerView = (RecyclerView) findViewById( R.id.recycler_view);
+        mRecyclerView.setLayoutManager( new LinearLayoutManager( this ));
+        mRecyclerView.setAdapter( mAdapter );
+
         // TODO: Am Ende löschen
         Log.d(TAG, "onCreate called");
-        Toast.makeText(getApplicationContext(), "App started", Toast.LENGTH_LONG).show();
     }
 
     @Override
     protected void onStart() {
         Log.d(TAG, "onStart called");
-        Intent intent = new Intent(getApplication(), PostActivity.class);
-        startActivity(intent);
+        //Intent intent = new Intent(getApplication(), PostActivity.class);
+        //startActivity(intent);
         super.onStart();
     }
 
@@ -52,12 +75,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.menu_main_manage_account){
-            Toast.makeText(getApplicationContext(), "Pressed Manage Account", Toast.LENGTH_LONG).show();
-        }
+        if (item.getItemId() == R.id.menu_test_auth){
 
-        if (item.getItemId() == R.id.menu_main_test){
-            Toast.makeText(getApplicationContext(), "Pressed Test", Toast.LENGTH_LONG).show();
+            // Abfrage des aktuell angemeldeten Users
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user == null) {
+                Toast.makeText(getApplicationContext(), "No user signed in", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "User :" + user.getEmail(), Toast.LENGTH_LONG).show();
+            }
         }
 
         return super.onOptionsItemSelected(item);

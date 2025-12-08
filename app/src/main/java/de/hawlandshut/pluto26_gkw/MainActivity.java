@@ -64,10 +64,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        Log.d(TAG, "onStart called");
-        //Intent intent = new Intent(getApplication(), PostActivity.class);
-        //startActivity(intent);
         super.onStart();
+        Log.d(TAG, "called onStart");
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            Intent intent = new Intent(getApplication(), SignInActivity.class);
+            startActivity(intent);
+        }
     }
 
     // Erzeugen des Menues oben rechts mit den drei Punkten.
@@ -81,216 +84,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (item.getItemId() == R.id.menu_test_auth) {
-            UserTestAuthStatus();
+        if (item.getItemId() == R.id.menu_post) {
+
         }
 
-        if (item.getItemId() == R.id.menu_create_user) {
-            AuthCreateUser(TEST_MAIL, TEST_PASSWORD);
-        }
-
-        if (item.getItemId() == R.id.menu_delete) {
-            UserDelete();
-        }
-
-        if (item.getItemId() == R.id.menu_password_reset_email) {
-            AuthSendPasswordResetEmail(TEST_MAIL);
-        }
-
-        if (item.getItemId() == R.id.menu_verification_mail) {
-            UserSendMailVerification();
-        }
-
-        if (item.getItemId() == R.id.menu_sign_in) {
-            AuthSignInWithEmailAndPassword(TEST_MAIL, TEST_PASSWORD);
-        }
-
-        if (item.getItemId() == R.id.menu_sign_out) {
-            AuthSignOut();
+        if (item.getItemId() == R.id.menu_manage_account) {
+            Intent intent = new Intent(getApplication(), ManageAccountActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void AuthSignOut() {
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) {
-            Toast.makeText(getApplicationContext(),
-                    "No user signed in.",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-        mAuth.signOut();
-        Toast.makeText(getApplicationContext(),
-                "User " + user.getEmail() + " signed out.",
-                Toast.LENGTH_SHORT).show();
-    }
-
-    private void AuthSignInWithEmailAndPassword(String email, String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(getApplicationContext(),
-                                            "User signed in : " + user.getEmail(),
-                                            Toast.LENGTH_LONG)
-                                    .show();
-
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Toast.makeText(getApplicationContext(),
-                                            "User signIn failed." + task.getException().getMessage(),
-                                            Toast.LENGTH_LONG)
-                                    .show();
-                        }
-                        // ...
-                    }
-                });
-    }
-
-    private void UserSendMailVerification() {
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) {
-            Toast.makeText(getApplicationContext(), "No user authentiated.",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        } else {
-            user.sendEmailVerification()
-                    .addOnCompleteListener(
-                            this,
-                            new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        //Erfolgsfall
-                                        Toast.makeText(getApplicationContext(),
-                                                        "Ver. Mail sent.",
-                                                        Toast.LENGTH_LONG)
-                                                .show();
-                                    } else {
-                                        // Fehlerfall
-                                        Toast.makeText(getApplicationContext(),
-                                                        "Sending Verif. Mail Failed: "
-                                                                + task.getException().getMessage(),
-                                                        Toast.LENGTH_LONG)
-                                                .show();
-                                    }
-                                }
-                            }
-                    );
-        }
-    }
-
-    private void AuthSendPasswordResetEmail(String email) {
-        mAuth.sendPasswordResetEmail(email)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(getApplicationContext(),
-                                            "We sent you a link to your e-mail account.",
-                                            Toast.LENGTH_LONG)
-                                    .show();
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                            "Could not send mail. Correct e-mail?.",
-                                            Toast.LENGTH_LONG)
-                                    .show();
-                        }
-                    }
-                });
-    }
-
-    private void UserDelete() {
-
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) {
-            Toast.makeText(getApplicationContext(),
-                            "No user signed in. Please sign in before deleting.",
-                            Toast.LENGTH_LONG)
-                    .show();
-            return;
-        }
-
-        user.delete()
-                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(getApplicationContext(),
-                                            "Account was deleted.",
-                                            Toast.LENGTH_LONG)
-                                    .show();
-
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                            "Deletion failed : " + task.getException().getMessage(),
-                                            Toast.LENGTH_LONG)
-                                    .show();
-                        }
-                    }
-                });
-    }
-
-    private void AuthCreateUser(String testMail, String testPassword) {
-        mAuth.createUserWithEmailAndPassword(TEST_MAIL, TEST_PASSWORD).addOnCompleteListener(
-                new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "User successfully created.");
-                            Toast.makeText(getApplicationContext(),
-                                    "User created",
-                                    Toast.LENGTH_LONG).show();
-                        } else {
-                            Log.d(TAG, "Error : " + task.getException().getMessage());
-                            Toast.makeText(getApplicationContext(),
-                                    "Error : " + task.getException().getMessage(),
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }
-        );
-    }
-
-    private void UserTestAuthStatus() {
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) {
-            Toast.makeText(getApplicationContext(),
-                    "Not authenticated",
-                    Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(getApplicationContext(),
-                    "Authenticated as" + user.getEmail() + " (" + user.isEmailVerified() + ")",
-                    Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        Log.d(TAG, "onResume called");
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        Log.d(TAG, "onPause called");
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        Log.d(TAG, "onStop called");
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        Log.d(TAG, "onDestroy called");
-        super.onDestroy();
-    }
 }

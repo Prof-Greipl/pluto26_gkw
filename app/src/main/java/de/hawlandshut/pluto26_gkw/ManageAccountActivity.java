@@ -8,13 +8,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 public class ManageAccountActivity extends AppCompatActivity implements View.OnClickListener{
+
+    FirebaseAuth mAuth;
     // 3.a Declare UI-Variables
     TextView mTextViewEmail;
     TextView mTextViewVerificationState;
@@ -52,6 +60,8 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
         mButtonSignOut.setOnClickListener( this );
         mButtonSendVerificationEmail.setOnClickListener( this );
         mButtonDeleteAccount.setOnClickListener( this );
+
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -73,14 +83,80 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
     }
 
     private void doDeleteAccount() {
-        Toast.makeText(getApplicationContext(), "Pressed Delete Account", Toast.LENGTH_LONG).show();
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            Toast.makeText(getApplicationContext(),
+                            "No user signed in. Please sign in before deleting.",
+                            Toast.LENGTH_LONG)
+                    .show();
+            return;
+        }
+
+        user.delete()
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(getApplicationContext(),
+                                            "Account was deleted.",
+                                            Toast.LENGTH_LONG)
+                                    .show();
+
+                        } else {
+                            Toast.makeText(getApplicationContext(),
+                                            "Deletion failed : " + task.getException().getMessage(),
+                                            Toast.LENGTH_LONG)
+                                    .show();
+                        }
+                    }
+                });
+
     }
 
     private void doSendVerificationMail() {
-        Toast.makeText(getApplicationContext(), "Pressed Send VeriMail", Toast.LENGTH_LONG).show();
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            Toast.makeText(getApplicationContext(), "No user authentiated.",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        } else {
+            user.sendEmailVerification()
+                    .addOnCompleteListener(
+                            this,
+                            new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        //Erfolgsfall
+                                        Toast.makeText(getApplicationContext(),
+                                                        "Ver. Mail sent.",
+                                                        Toast.LENGTH_LONG)
+                                                .show();
+                                    } else {
+                                        // Fehlerfall
+                                        Toast.makeText(getApplicationContext(),
+                                                        "Sending Verif. Mail Failed: "
+                                                                + task.getException().getMessage(),
+                                                        Toast.LENGTH_LONG)
+                                                .show();
+                                    }
+                                }
+                            }
+                    );
+        }
     }
 
     private void doSignOut() {
-        Toast.makeText(getApplicationContext(), "Pressed SignOut", Toast.LENGTH_LONG).show();
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            Toast.makeText(getApplicationContext(),
+                    "No user signed in.",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        mAuth.signOut();
+        Toast.makeText(getApplicationContext(),
+                "User " + user.getEmail() + " signed out.",
+                Toast.LENGTH_SHORT).show();
     }
 }

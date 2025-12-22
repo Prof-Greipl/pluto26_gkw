@@ -1,6 +1,7 @@
 package de.hawlandshut.pluto26_gkw;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -65,6 +66,36 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null){
+            this.finish(); // This should never happen
+        }
+        else {
+            mTextViewEmail.setText("E-Mail : " + user.getEmail());
+            mTextViewTechnicalId.setText("Technical ID : " +  user.getUid() );
+            if ( user.isEmailVerified()){
+                mTextViewVerificationState.setText("Ihr Konto ist verifiziert");
+                mButtonSendVerificationEmail.setEnabled(false);
+            }
+            else {
+                mTextViewVerificationState.setText("Ihr Konto ist nicht verifiziert.");
+            }
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int i =  item.getItemId() ;
+        if (i == android.R.id.home){
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onClick(View view) {
         if ( view.getId() == R.id.manageAccountSignOut){
             doSignOut();
@@ -101,7 +132,7 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
                                             "Account was deleted.",
                                             Toast.LENGTH_LONG)
                                     .show();
-
+                            finish();
                         } else {
                             Toast.makeText(getApplicationContext(),
                                             "Deletion failed : " + task.getException().getMessage(),
@@ -158,5 +189,6 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
         Toast.makeText(getApplicationContext(),
                 "User " + user.getEmail() + " signed out.",
                 Toast.LENGTH_SHORT).show();
+        finish();
     }
 }

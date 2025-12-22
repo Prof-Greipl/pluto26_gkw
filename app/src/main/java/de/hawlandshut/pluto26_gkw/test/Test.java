@@ -27,8 +27,8 @@ public class Test {
                     "Author " + i,
                     "Title " + i,
                     body, "key" + i,
-                    c.getTime(),
-                    new HashMap() ));
+                    c.getTime()
+                    ));
         }
         return postList;
     }

@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -22,19 +23,26 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
-import de.hawlandshut.pluto26_gkw.test.Test;
+import java.util.ArrayList;
+
+import de.hawlandshut.pluto26_gkw.model.Post;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "xxx MainActivity";
     private CustomAdapter mAdapter;
     private RecyclerView mRecyclerView;
 
-    // TODO Only for testing - remove later
-    private static final String TEST_MAIL = "fhgreipl@gmail.com";
-    private static final String TEST_PASSWORD = "123456";
-
     FirebaseAuth mAuth;
+    FirebaseFirestore mDb;
+    ListenerRegistration mListenerRegistration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,17 +57,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mAuth = FirebaseAuth.getInstance();
+        mDb = FirebaseFirestore.getInstance();
 
         mAdapter = new CustomAdapter();
-        // Testdaten setzen
-        mAdapter.mPostList = Test.createPostList(3);
+
+        // Initialize mPostList
+        mAdapter.mPostList = new ArrayList<Post>();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
 
-        // TODO: Am Ende löschen
-        Log.d(TAG, "onCreate called");
+        // Init Listener on POST collection
+        mListenerRegistration = createMyEventListener();
+
     }
 
     @Override
@@ -68,8 +79,18 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "called onStart");
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {
+            mAdapter.mPostList.clear();
+            if (mListenerRegistration != null){
+                mListenerRegistration.remove();
+                mListenerRegistration = null;
+            }
             Intent intent = new Intent(getApplication(), SignInActivity.class);
             startActivity(intent);
+        }
+        else {
+            if (mListenerRegistration == null){
+                mListenerRegistration = createMyEventListener();
+            }
         }
     }
 
@@ -85,7 +106,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == R.id.menu_post) {
-
+            Intent intent = new Intent(getApplication(), PostActivity.class);
+            startActivity(intent);
         }
 
         if (item.getItemId() == R.id.menu_manage_account) {
@@ -96,4 +118,32 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    ListenerRegistration createMyEventListener () {
+        // Step 1: Define the query to firebase
+        Query query = FirebaseFirestore.getInstance().collection("posts")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(5);
+        // Step 2: Define, how you process an update from the listener
+        EventListener<QuerySnapshot> listener = new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot snapshot,
+                                @Nullable FirebaseFirestoreException error) {
+                Log.d(TAG, "Data received. Count = " + snapshot.size());
+                mAdapter.mPostList.clear();
+                for (QueryDocumentSnapshot doc : snapshot) {
+                    if (doc.get("uid") != null) {
+                        Log.d(TAG, "Post " + doc.getId() + " - " + doc.get("body"));
+
+                        // Verarbeiten des Posts
+                        Post addedPost = Post.fromDocument(doc);
+                        // Post in die anzuzeigende Liste aufnehmen
+                        mAdapter.mPostList.add(addedPost);
+                    }
+                }
+                mAdapter.notifyDataSetChanged();
+            }
+        };
+        // Step 3 : return the query with the listener added.
+        return query.addSnapshotListener(listener);
+    }
 }

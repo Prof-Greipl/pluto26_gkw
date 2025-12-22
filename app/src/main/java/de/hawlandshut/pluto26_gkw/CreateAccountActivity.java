@@ -2,6 +2,7 @@ package de.hawlandshut.pluto26_gkw;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -9,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -48,29 +50,53 @@ implements View.OnClickListener{
 
         mButtonCreateAccount.setOnClickListener( this );
 
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
         // TODO: Presets for testing - remove for prod
         mEditTextEMail.setText("xxx@gmail.com");
         mEditTextPassword1.setText("123456");
         mEditTextPassword2.setText("123456");
+
+        mAuth = FirebaseAuth.getInstance();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int i =  item.getItemId() ;
+        if (i == android.R.id.home){
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.createAccountButtonCreateAccount){
+            Log.d(TAG, "doCreateAccount");
             doCreateAccount();
         }
     }
 
     private void doCreateAccount() {
+        Log.d(TAG, "doCreateAccount");
         String email = mEditTextEMail.getText().toString();
         String password1 = mEditTextPassword1.getText().toString();
         String password2 = mEditTextPassword2.getText().toString();
-
+        Log.d(TAG, "doCreateAccount");
         // Validierunf
         if (!password1.equals(password2)){
             Toast.makeText(getApplicationContext(),
                     "Passwords do not match",
                     Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Passwords do not match)");
             return;
         }
 
@@ -83,11 +109,14 @@ implements View.OnClickListener{
                             Toast.makeText(getApplicationContext(),
                                     "User created",
                                     Toast.LENGTH_LONG).show();
+                            Log.d(TAG, "Account created");
+                            finish();
                         } else {
                             Log.d(TAG, "Error : " + task.getException().getMessage());
                             Toast.makeText(getApplicationContext(),
                                     "Error : " + task.getException().getMessage(),
                                     Toast.LENGTH_LONG).show();
+                            Log.d(TAG, "Error" + task.getException().getMessage());
                         }
                     }
                 }

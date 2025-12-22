@@ -1,5 +1,6 @@
 package de.hawlandshut.pluto26_gkw;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -65,6 +66,15 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         mAuth = FirebaseAuth.getInstance();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null){
+            finish();
+        }
+    }
+
     // 3.c Implement Business Logic
     @Override
     public void onClick(View view) {
@@ -85,7 +95,8 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void doGotoCreateAccount() {
-        Toast.makeText(getApplicationContext(), "Pressed Create Account", Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(getApplication(), CreateAccountActivity.class);
+        startActivity(intent);
     }
 
     private void doResetPassword() {
@@ -127,7 +138,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                                             "User signed in : " + user.getEmail(),
                                             Toast.LENGTH_LONG)
                                     .show();
-
+                            finish();
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(getApplicationContext(),
@@ -138,6 +149,5 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                         // ...
                     }
                 });
-        Toast.makeText(getApplicationContext(), "Pressed Sign In", Toast.LENGTH_LONG).show();
     }
 }
